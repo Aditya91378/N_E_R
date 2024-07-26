@@ -7,12 +7,10 @@ const path = require("path");
 const fs = require("fs");
 const hbs = require("hbs");
 const collection = require("./mongodb");
-const { exec } = require('child_process'); // Import child_process
 
 const app = express();
-const mongoURI = "mongodb://localhost:27017/test";
+const mongoURI = "mongodb://localhost:27017/logsignupDB";
 
-// Create MongoDB connection
 const conn = mongoose.createConnection(mongoURI);
 let gfs;
 
@@ -22,80 +20,74 @@ conn.once("open", () => {
     });
 });
 
-// Middleware
 app.use(express.json());
 app.set("view engine", "hbs");
 app.set("views", path.join(__dirname, '../views'));
 app.use(express.urlencoded({ extended: false }));
 app.use(express.static('public'));
 
-// Multer configuration for memory storage
+// Multer configuration for multiple files
 const storage = multer.memoryStorage();
-const upload = multer({ storage });
+const upload = multer({ storage, limits: { files: 10 } });
 
-app.get("/index", (req, res) => {
-    res.render("index.html")
-    })
-
-// Home route 
 app.get("/", (req, res) => {
     res.render("home");
 });
 
-// Image upload page route
 app.get('/imagePage', (req, res) => {
     res.render('imagePage', { title: 'Image Upload' });
 });
 
-// Image upload route
-app.post('/upload', upload.single('image'), async (req, res) => {
-    if (!req.file) {
-        return res.status(400).send('No file uploaded.');
+// Image upload route (modified to handle multiple files)
+app.post('/upload', upload.array('image', 10), async (req, res) => {
+    if (!req.files) {
+        return res.status(400).send('No files uploaded.');
     }
 
-    console.log(req.file); // Log the uploaded file object
+    console.log(req.files); // Log the uploaded files array
 
-    // Define the path where the image will be stored
-    const imagePath = path.join(__dirname, '../uploads', req.file.originalname);
+    // Define the path where the images will be stored
+    const imagePath = path.join(__dirname, '../uploads');
 
-    // Use fs to write the file to the local uploads folder
-    fs.writeFile(imagePath, req.file.buffer, async (err) => {
-        if (err) {
-            return res.status(500).send('Error saving the file.');
-        }
+    // Use fs to write the files to the local uploads folder
+    req.files.forEach(file => {
+        fs.writeFile(path.join(imagePath, file.originalname), file.buffer, async (err) => {
+            if (err) {
+                return res.status(500).send('Error saving the file.');
+            }
 
-        // Store the image in GridFS
-        const uploadStream = gfs.openUploadStream(req.file.originalname);
-        uploadStream.end(req.file.buffer);
+            // Store the image in GridFS
+            const uploadStream = gfs.openUploadStream(file.originalname);
+            uploadStream.end(file.buffer);
 
-        uploadStream.on('finish', async () => {
-            // Access the file ID after the upload is complete
-            console.log(`File written to GridFS with ID: ${uploadStream.id}`);
+            uploadStream.on('finish', async () => {
+                // Access the file ID after the upload is complete
+                console.log(`File written to GridFS with ID: ${uploadStream.id}`);
 
-            // Store image metadata in the database
-            const imageData = {
-                filename: req.file.originalname,
-                uploadDate: new Date(),
-                path: imagePath,
-                gridFSId: uploadStream.id
-            };
+                // Store image metadata in the database
+                const imageData = {
+                    filename: file.originalname,
+                    uploadDate: new Date(),
+                    path: path.join(imagePath, file.originalname),
+                    gridFSId: uploadStream.id
+                };
 
-            await collection.updateOne(
-                { name: req.body.name },
-                { $push: { images: imageData } }
-            );
+                await collection.updateOne(
+                    { name: req.body.name },
+                    { $push: { images: imageData } }
+                );
+            });
 
-            res.send(`File uploaded successfully: <a href="/images/${req.file.originalname}">View Image</a>|<a href="http://localhost:5000">view text</a>`);
-        });
-
-        uploadStream.on('error', (error) => {
-            console.error('Error writing to GridFS:', error);
-            res.status(500).send('Error saving to GridFS.');
+            uploadStream.on('error', (error) => {
+                console.error('Error writing to GridFS:', error);
+                res.status(500).send('Error saving to GridFS.');
+            });
         });
     });
+
+    res.send('Files uploaded successfully.');
 });
 
-// Route to serve images from the local filesystem
 app.get('/images/:filename', (req, res) => {
     const filePath = path.join(__dirname, '../uploads', req.params.filename);
     res.sendFile(filePath, (err) => {
@@ -105,7 +97,6 @@ app.get('/images/:filename', (req, res) => {
     });
 });
 
-// Route to retrieve images from GridFS
 app.get('/gridfs/:id', (req, res) => {
     gfs.find({ _id: mongoose.Types.ObjectId(req.params.id) }).toArray((err, files) => {
         if (!files || files.length === 0) {
@@ -117,7 +108,6 @@ app.get('/gridfs/:id', (req, res) => {
     });
 });
 
-// Login route
 app.get("/login", (req, res) => {
     res.render("login");
 });
@@ -135,7 +125,6 @@ app.post("/login", async (req, res) => {
     }
 });
 
-// Signup route
 app.get("/signup", (req, res) => {
     const num1 = Math.floor(Math.random() * 10);
     const num2 = Math.floor(Math.random() * 10);
@@ -152,14 +141,13 @@ app.post("/signup", async (req, res) => {
     const data = {
         name: name,
         password: password,
-        images: []
+        images: [] // Initialize images array
     };
 
     await collection.insertMany([data]);
     res.render("home");
 });
 
-// Forgot password route
 app.get("/forgot-password", (req, res) => {
     res.render("forgot-password");
 });
@@ -199,7 +187,6 @@ app.post("/forgot-password", async (req, res) => {
     });
 });
 
-// OTP verification route
 app.post("/verify-otp", async (req, res) => {
     const user = await collection.findOne({ name: req.body.name });
     if (!user || user.otp !== parseInt(req.body.otp)) {
@@ -209,7 +196,6 @@ app.post("/verify-otp", async (req, res) => {
     res.render("reset-password", { name: req.body.name });
 });
 
-// Reset password route
 app.post("/reset-password", async (req, res) => {
     const user = await collection.findOne({ name: req.body.name });
     user.password = req.body.password;
@@ -219,17 +205,6 @@ app.post("/reset-password", async (req, res) => {
     res.render("home");
 });
 
-// Run the Python script when the server starts
-exec('python C:/Users/SMITH/OneDrive/Desktop/moremongoprac_file_input_mongodb/app.py', (error, stdout, stderr) => {
-    if (error) {
-        console.error(`Error executing Python script: ${error}`);
-        return;
-    }
-    console.log(`Python script output: ${stdout}`);
-    console.error(`Python script stderr: ${stderr}`);
-});
-
-// Start the server
 app.listen(3000, () => {
     console.log("Server is running on port 3000");
 });
