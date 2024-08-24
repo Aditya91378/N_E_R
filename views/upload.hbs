@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CSV Data Table</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 0;
+            padding: 20px;
+            {{!-- background-image: radial-gradient(#f4e900,#60b6f1) --}}
+        }
+
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            background-color: #ffffff;
+            border-bottom: 1px solid #ddd;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+            position: fixed;
+            top: 0;
+            left: 0;
+            padding: 10px 20px;
+        }
+
+        .navbar a {
+            color: #0e67db;
+            text-decoration: none;
+            padding: 10px 15px;
+            border: 2px solid transparent;
+            border-radius: 4px;
+            font-size: 15px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            margin-right: 10px;
+        }
+
+        .navbar a:hover {
+            background-color: #e9ecef;
+            border-color: #0e67db;
+            color: #333;
+        }
+
+        .navbar img {
+            height: 35px;
+            width: 80px;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+
+        h1 {
+            color: #0e67db;
+            margin-bottom: 20px;
+            font-size: 32px;
+            text-align: center;
+            margin-top: 70px; /* Adjust for navbar height */
+        }
+
+        table {
+            width: 80%;
+            border-collapse: collapse;
+            background-color: #fff;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            overflow: hidden;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin-top: 20px; /* Space below the heading */
+        }
+
+        thead {
+            background-color: #0e67db;
+            color: white;
+        }
+
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            font-weight: bold;
+        }
+
+        tbody tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+
+        tbody tr:hover {
+            background-color: #f1f1f1;
+        }
+    </style>
+</head>
+<body>
+    <div class="navbar">
+        <a href="/"><img src="https://symbl.ai/wp-content/uploads/2022/08/What-Is-Named-Entity-Recognition-NER-and-What-Can-You-Do-with-It.png" alt="Home"></a>
+        <div class="nav-links">
+            <a href="/login">Log In</a>
+            <a href="/signup">Sign Up</a>
+        </div>
+    </div>
+
+    <h1>The data table you waited for.</h1>
+   <table border="1">
+        <thead>
+            <tr>
+                {{#each headers}}
+                <th>{{this}}</th>
+                {{/each}}
+                <th>View</th> <!-- Add a new header for the image link -->
+            </tr>
+        </thead>
+        <tbody>
+            {{#each rows}}
+            <tr>
+                {{#each ../headers}}
+                <td>{{lookup ../this this}}</td>
+                {{/each}}
+                <td>
+                    <!-- Add a link to view the image in the last column -->
+                    <a href="{{this.imageFilename}}" target="_blank">View Image</a>
+                </td>
+            </tr>
+            {{/each}}
+        </tbody>
+    </table>
+</body>
+</html>

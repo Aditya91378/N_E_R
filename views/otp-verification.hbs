@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verify OTP</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 0;
+            padding: 20px;
+            background-image: radial-gradient(#D6D1CD,#969A97)
+        }
+
+        .navbar {
+            display:flex;
+            justify-content:space-around;
+            align-items:center;
+            width: 100%;
+            background-color: #f8f9fa;
+            border-bottom: 1px solid #ddd;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+            position: fixed;
+            top: 0;
+            left: 0;
+            padding: 10px 20px;
+        }
+
+        .navbar a {
+            background-color: #f0f4ff;
+            border: 2px solid #5c67f2;
+            border-radius: 8px;
+            padding: 0px 30px;
+            color: #5c67f2;
+            font-size: 18px;
+            text-align: center;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .navbar a:hover {
+           background-color: #5c67f2;
+            color: #fff;
+            transform: scale(1.05);
+        }
+
+        .navbar img {
+            height: 35px;
+            width: 80px;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        h2 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 20px;
+            font-family:'Times New Roman', Times, serif;
+        }
+
+        form {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            width: 300px;
+            text-align: center;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        input[type="submit"] {
+            background-color: #5c67f2;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            width: 100%;
+        }
+
+        input[type="submit"]:hover {
+            background-color: #4a54e1;
+        }
+    </style>
+</head>
+<body>
+    <div class="navbar">
+        <a href="/"><img src="https://symbl.ai/wp-content/uploads/2022/08/What-Is-Named-Entity-Recognition-NER-and-What-Can-You-Do-with-It.png" alt="Home"></a>
+        <h3>Named Entity Recognition</h3>
+        <div>
+            <a href="/login">Log In</a>
+            <a href="/signup">Sign Up</a>
+        </div>
+    </div>
+
+    <h2>Verify the OTP Below</h2>
+    <form action="/verify-otp" method="post">
+        <input type="hidden" name="name" value="{{name}}">
+        <input type="text" name="otp" placeholder="Enter OTP" required>
+        <input type="submit" value="Verify OTP">
+    </form>
+</body>
+</html>
