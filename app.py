@@ -96,6 +96,7 @@ def extract_entities(text,image_path):
         "Date from": [date_from if date_from else "none" ],
         "Date to": [date_to if date_to else "none" ],
         "Title": [title if title else "none" ],
+        # "Image":[image_path]
         "Image":[os.path.basename(image_path)]
 
         # "Single dates": [dates if dates else "none" ],

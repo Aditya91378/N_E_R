@@ -142,14 +142,15 @@ app.get('/upload', (req, res) => {
         })
         .on('end', () => {
             // After reading the CSV file, process the data
-            results.forEach(row => {
-              // Check if row.Image exists before calling replace()
-              if (row.Image) {
-                row.imageFilename = row.Image.replace(/\\/g, '/');
-              } else {
-                row.imageFilename = ''; // Set a default value if row.Image is undefined
-              }
-            });
+            // results.forEach(row => {
+            //   // Check if row.Image exists before calling replace()
+            //   if (row.Image) {
+            //     row.imageFilename = row.Image.replace(/\\/g, '/upload')
+            //   } 
+            // //   else {
+            // //     row.imageFilename = ''; // Set a default value if row.Image is undefined
+            // //   }
+            // });
 
             // Render the view, passing the headers and rows
             res.render('upload', { headers, rows: results });
